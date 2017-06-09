@@ -42,7 +42,7 @@ object ClusterShardTest {
 
   def startSystem(config: Config): ActorSystem = {
     val system = ActorSystem.create("ClusterShard", config)
-    system.actorOf(Service.props, name = "service")
+    system.actorOf(Service.props(config.getConfig("service")), name = "service")
 
     system
   }

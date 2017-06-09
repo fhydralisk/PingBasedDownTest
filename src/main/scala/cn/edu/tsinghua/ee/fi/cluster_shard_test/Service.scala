@@ -2,6 +2,7 @@ package cn.edu.tsinghua.ee.fi.cluster_shard_test
 
 import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
+import com.typesafe.config.Config
 
 import concurrent.duration._
 
@@ -10,7 +11,7 @@ import concurrent.duration._
   */
 
 object Service {
-  def props: Props = Props(classOf[Service])
+  def props(config: Config): Props = Props(new Service(config))
 
   object Messages {
     case class ServiceRequest()
@@ -18,16 +19,23 @@ object Service {
   }
 }
 
-class Service extends Actor {
+class Service(config: Config) extends Actor {
   val cluster = Cluster(context.system)
 
   import context.dispatcher
 
-  context.system.scheduler.schedule(1 second, 10 millis) {
-    cluster.state.members.filterNot (_.address == cluster.selfAddress) foreach { m =>
-      context.actorSelection(s"${m.address.protocol}://${m.address.hostPort}/user/service") ! Service.Messages.ServiceRequest()
+  private val broadcastAfter = config.getDuration("start-broadcast-after")
+  private val broadcastInterval = config.getDuration("broadcast-interval")
+  private val broadcastQuantity = config.getInt("broadcast-quantity")
+
+  if (!broadcastAfter.isNegative)
+    context.system.scheduler.schedule(Duration.fromNanos(broadcastAfter.toNanos), Duration.fromNanos(broadcastInterval.toNanos)) {
+      cluster.state.members.filterNot (_.address == cluster.selfAddress) foreach { m =>
+        1 to broadcastQuantity foreach { _ =>
+          context.actorSelection(s"${m.address.protocol}://${m.address.hostPort}/user/service") ! Service.Messages.ServiceRequest()
+        }
+      }
     }
-  }
 
   override def receive = {
     case Service.Messages.ServiceRequest() =>
