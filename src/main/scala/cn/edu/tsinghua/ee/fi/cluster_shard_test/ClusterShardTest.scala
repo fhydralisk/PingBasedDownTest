@@ -14,25 +14,9 @@ import concurrent.duration._
 object ClusterShardTest {
   val startupTime: Long = System.currentTimeMillis()
   def main(args: Array[String]): Unit = {
-    val fdConfig = args(1) match {
-      case "leader" =>
-        ConfigFactory.parseString(
-          """akka.cluster.downing-provider-class = "cn.edu.tsinghua.ee.fi.pingbaseddown.PingBasedDowning"
-            |akka.cluster.ping-based-downing.use-auto-down = false
-            |akka.cluster.roles = [leader]""".stripMargin
-        )
-      case "normal" =>
-        ConfigFactory.parseString(
-          """akka.cluster.downing-provider-class = "cn.edu.tsinghua.ee.fi.pingbaseddown.PingBasedDowning"
-            |akka.cluster.auto-down-unreachable-after = 30s
-            |akka.cluster.roles = [normal]""".stripMargin)
-      case "failure" =>
-        ConfigFactory.parseString(
-          """akka.cluster.downing-provider-class = "cn.edu.tsinghua.ee.fi.pingbaseddown.PingBasedDowning"
-            |akka.cluster.roles = [failure]
-            |akka.cluster.auto-down-unreachable-after = 30s""".stripMargin)
-    }
-    val config = fdConfig
+    val roleConfig = ConfigFactory.parseString(s"akka.cluster.roles = [${args(1)}]")
+
+    val config = roleConfig
       .withFallback(ConfigFactory.parseString(s"akka.remote.netty.tcp.hostname = 10.0.0.${args(0)}"))
       .withFallback(ConfigFactory.parseResources("application.conf"))
 
@@ -43,7 +27,6 @@ object ClusterShardTest {
 
     val restartingTask = system.scheduler.scheduleOnce(45 second) {
       system.terminate()
-
     }
 
     cluster.registerOnMemberUp {
