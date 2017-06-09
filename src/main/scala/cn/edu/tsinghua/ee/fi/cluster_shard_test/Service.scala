@@ -2,6 +2,7 @@ package cn.edu.tsinghua.ee.fi.cluster_shard_test
 
 import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
+import cn.edu.tsinghua.ee.fi.pingbaseddown.PingBasedDownNotification.{ClusterFailure, NodeFailure}
 import com.typesafe.config.Config
 
 import concurrent.duration._
@@ -40,6 +41,13 @@ class Service(config: Config) extends Actor {
   override def receive = {
     case Service.Messages.ServiceRequest() =>
       sender() ! Service.Messages.ServiceResponse()
+
+    case NodeFailure =>
+      System.exit(0)
+
+    case ClusterFailure =>
+      System.exit(0)
+
     case _ =>
 
   }
