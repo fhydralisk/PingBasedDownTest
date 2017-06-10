@@ -74,7 +74,7 @@ object ClusterShardTest {
         case "leader" =>
 
           if (!cluster.state.members.exists( _.roles.contains("normal"))) {
-            system.terminate()
+            //system.terminate()
             println(s"System shutdown due to normal members being kicked, running time:  ${(System.currentTimeMillis() - startupTime)/1000} seconds")
             logToFile(s"${System.getProperty("user.home")}/log_losstest$node.log", "Startup", startupTime)
             logToFile(s"${System.getProperty("user.home")}/log_losstest$node.log", s"Terminate due to kicking normal, running: ${(System.currentTimeMillis() - startupTime)/1000} seconds", startupTime)
@@ -83,7 +83,7 @@ object ClusterShardTest {
         case "normal" =>
 
           if (!cluster.state.members.exists( _.roles.contains("leader"))) {
-            system.terminate()
+            //system.terminate()
             println(s"System shutdown due to leader member being kicked, running time:  ${(System.currentTimeMillis() - startupTime)/1000} seconds")
             logToFile(s"${System.getProperty("user.home")}/log_losstest$node.log", "Startup", startupTime)
             logToFile(s"${System.getProperty("user.home")}/log_losstest$node.log", s"Terminate due to kicking normal, running: ${(System.currentTimeMillis() - startupTime)/1000} seconds", startupTime)
