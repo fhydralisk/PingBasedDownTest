@@ -90,6 +90,14 @@ object ClusterShardTest {
           }
 
         case "failure" =>
+          system.registerOnTermination {
+            println("Terminate due to termination of system")
+            System.exit(0)
+          }
+          cluster.registerOnMemberRemoved {
+            println("Terminate due to termination of cluster")
+            System.exit(0)
+          }
         case _ =>
 
       }
